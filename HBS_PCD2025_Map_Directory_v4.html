@@ -280,17 +280,16 @@
       data.push(bubblesTrace);
     }
 
-    var layout = {
-      title: "HBS PCD 2025 Participants by Country",
-      margin: {l:10, r:10, t:50, b:10},
-      geo: {
-        showframe: false,
-        showcoastlines: true,
-        showcountries: true,
-        countrycolor: "#999",
-        projection: { type: "natural earth" }
-      }
-    };
+   var layout = {
+  margin: {l:5, r:5, t:0, b:5},
+  geo: {
+    showframe: false,
+    showcoastlines: true,
+    showcountries: true,
+    countrycolor: "#999",
+    projection: { type: "natural earth" }
+  }
+};
 
     Plotly.newPlot("map", data, layout, {displayModeBar: false, responsive: true});
 
