@@ -7,36 +7,45 @@
   <!-- Load Plotly at view-time -->
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 12px; }
-    h2 { margin: 10px 0 6px; }
-    p { margin: 6px 0; }
-    #map { width: 100%; height: 70vh; }
-    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-    th, td { border: 1px solid #ddd; padding: 8px; font-size: 14px; }
-    th { background: #f4f4f4; text-align: left; }
-    .btn { padding: 8px 12px; border: 1px solid #ccc; background:#fafafa; cursor:pointer; border-radius:6px; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin:0; padding:12px; }
+    h2 { margin:10px 0 6px; }
+    p { margin:6px 0; }
+    #map { width:100%; height:70vh; }
+    table { border-collapse:collapse; width:100%; margin-top:10px; }
+    th, td { border:1px solid #ddd; padding:8px; font-size:14px; }
+    th { background:#f4f4f4; text-align:left; }
+    .btn { padding:8px 12px; border:1px solid #ccc; background:#fafafa; cursor:pointer; border-radius:6px; }
     #searchbar { display:flex; gap:8px; align-items:center; margin:8px 0 4px; flex-wrap:wrap; }
-    #q { padding: 8px; border:1px solid #ccc; border-radius:6px; min-width: 260px; }
-    #err { color: #b00020; white-space: pre-wrap; margin-top: 8px; font-size: 12px; }
+    #q { padding:8px; border:1px solid #ccc; border-radius:6px; min-width:260px; }
+    #err { color:#b00020; white-space:pre-wrap; margin-top:8px; font-size:12px; }
 
     /* Summary cards */
     .summary { display:flex; gap:16px; flex-wrap:wrap; margin:6px 0 10px; }
-    .summary .card { padding:10px 14px; border:1px solid #ddd; border-radius:8px; background:#fafafa; min-width: 220px; }
+    .summary .card { padding:10px 14px; border:1px solid #ddd; border-radius:8px; background:#fafafa; min-width:220px; }
     .summary .label { font-size:12px; color:#555; text-transform:uppercase; letter-spacing:.02em; }
     .summary .value { font-size:20px; font-weight:700; margin-top:4px; }
 
     /* Collapsible summary on mobile + compact layout */
     #summary-toggle { display:none; margin:8px 0; padding:6px 10px; background:#eee; border:none; border-radius:6px; cursor:pointer; font-size:14px; }
-    @media (max-width: 600px) {
-      body { padding: 8px; }
-      h2 { margin: 6px 0 4px; font-size: 18px; line-height: 1.15; }
-      p { margin: 4px 0; line-height: 1.25; }
-      #map { height: 58vh; }
-      .summary { margin: 6px 0; gap: 8px; display: none; }
-      .summary .card { padding: 8px 10px; min-width: unset; flex: 1; }
-      .summary .label { font-size: 11px; }
-      .summary .value { font-size: 18px; }
-      #summary-toggle { display: inline-block; }
+    @media (max-width:600px) {
+      body { padding:8px; }
+      h2 { margin:6px 0 4px; font-size:18px; line-height:1.15; }
+      p { margin:4px 0; line-height:1.25; }
+      #map { height:58vh; }
+      .summary { margin:6px 0; gap:8px; display:none; }
+      .summary .card { padding:8px 10px; min-width:unset; flex:1; }
+      .summary .label { font-size:11px; }
+      .summary .value { font-size:18px; }
+      #summary-toggle { display:inline-block; }
+    }
+
+    /* --- iOS Safari whitespace fix above Plotly map --- */
+    @media (max-width:600px) {
+      #map .svg-container { margin-top:-35px !important; }
+    }
+    @supports (-webkit-touch-callout: none) {
+      #map { padding-top:0 !important; margin-top:-15px !important; }
+      #map .svg-container { margin-top:-35px !important; }
     }
   </style>
 </head>
@@ -89,12 +98,13 @@
   document.addEventListener("DOMContentLoaded", function(){
     var btn = document.getElementById("summary-toggle");
     var sum = document.getElementById("summary");
-    if (!btn || !sum) return;
-    btn.addEventListener("click", function(){
-      var vis = getComputedStyle(sum).display;
-      if (vis === "none") { sum.style.display = "flex"; btn.textContent = "Hide Summary"; }
-      else { sum.style.display = "none"; btn.textContent = "Show Summary"; }
-    });
+    if (btn && sum) {
+      btn.addEventListener("click", function(){
+        var vis = getComputedStyle(sum).display;
+        if (vis === "none") { sum.style.display = "flex"; btn.textContent = "Hide Summary"; }
+        else { sum.style.display = "none"; btn.textContent = "Show Summary"; }
+      });
+    }
   });
 
   // Normalize country names for Plotly (JS)
@@ -236,7 +246,7 @@
       showscale: false,
       opacity: 0.95,
       visible: false,
-      marker: {line: {color: "#b00000", width: 3}}   // thick red outline
+      marker: {line: {color: "#b00000", width: 3}}
     };
 
     // ---- Small-country bubble overlay (scattergeo) ----
@@ -280,16 +290,17 @@
       data.push(bubblesTrace);
     }
 
-   var layout = {
-  margin: {l:5, r:5, t:0, b:5},
-  geo: {
-    showframe: false,
-    showcoastlines: true,
-    showcountries: true,
-    countrycolor: "#999",
-    projection: { type: "natural earth" }
-  }
-};
+    var layout = {
+      // No Plotly title (removes extra white space)
+      margin: {l:5, r:5, t:0, b:5},
+      geo: {
+        showframe: false,
+        showcoastlines: true,
+        showcountries: true,
+        countrycolor: "#999",
+        projection: { type: "natural earth" }
+      }
+    };
 
     Plotly.newPlot("map", data, layout, {displayModeBar: false, responsive: true});
 
@@ -301,7 +312,6 @@
     var q = document.getElementById("q");
     var btnSearch = document.getElementById("btn-search");
     var btnClear  = document.getElementById("btn-clear");
-    var currentCountry = null;
 
     function makeLink(url) {
       if (!url) return "";
@@ -329,7 +339,6 @@
       showTable(sub);
       var displayName = sub.length ? sub[0]["Business Country"] : countryNameNormalized;
       selectedEl.textContent = "Selected country: " + displayName + " - " + sub.length + " participant(s)";
-      currentCountry = displayName;
     }
 
     // ---- Highlight helpers ----
@@ -393,15 +402,13 @@
       if (exact){
         showTable([exact]);
         selectedEl.textContent = 'Search: "' + termRaw + '" - 1 match (' + exact["Business Country"] + ')';
-        currentCountry = null;
-        highlightCountry(exact["Business Country"]); // zoom + red outline
+        highlightCountry(exact["Business Country"]);
         return;
       }
 
       if (matches.length === 1){
         showTable(matches);
         selectedEl.textContent = 'Search: "' + termRaw + '" - 1 match (' + matches[0]["Business Country"] + ')';
-        currentCountry = null;
         highlightCountry(matches[0]["Business Country"]);
         return;
       }
@@ -415,7 +422,6 @@
 
       showTable(matches);
       selectedEl.textContent = 'Search: "' + termRaw + '" - ' + matches.length + ' participant(s)';
-      currentCountry = null;
       clearHighlight(); // no single-country highlight for multi-match
     }
 
@@ -428,7 +434,6 @@
       tbody.innerHTML = "";
       tbl.style.display = "none";
       selectedEl.textContent = "No country selected";
-      currentCountry = null;
       clearHighlight();
     });
   });
