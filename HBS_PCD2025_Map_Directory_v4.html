@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <title>HBS PCD 2025 Map Directory</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <!-- Load Plotly at view-time -->
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   <style>
@@ -31,21 +31,12 @@
       body { padding:8px; }
       h2 { margin:6px 0 4px; font-size:18px; line-height:1.15; }
       p { margin:4px 0; line-height:1.25; }
-      #map { height:58vh; }
+      #map { height:58svh; } /* stable vh on iOS */
       .summary { margin:6px 0; gap:8px; display:none; }
       .summary .card { padding:8px 10px; min-width:unset; flex:1; }
       .summary .label { font-size:11px; }
       .summary .value { font-size:18px; }
       #summary-toggle { display:inline-block; }
-    }
-
-    /* --- iOS Safari whitespace fix above Plotly map --- */
-    @media (max-width:600px) {
-      #map .svg-container { margin-top:-35px !important; }
-    }
-    @supports (-webkit-touch-callout: none) {
-      #map { padding-top:0 !important; margin-top:-15px !important; }
-      #map .svg-container { margin-top:-35px !important; }
     }
   </style>
 </head>
@@ -53,6 +44,9 @@
   <h2>HBS PCD 2025 - Interactive Map Directory</h2>
   <p>Tap a country to see the list of participants below, or search by name.</p>
   <p>Please let <strong>Vajira Weerasekera</strong> know if you need any corrections done. Add your change request <a href="https://weerasekeras-my.sharepoint.com/:w:/g/personal/vajira_weerasekera_net/EeJnu3MksotGqbjGb1v5u_0Bkku0pygZRhL2Scqt-po6cg?e=Dll92J" target="_blank" rel="noopener">here</a>.</p>
+
+  <!-- Anchor to measure the gap above the map -->
+  <div id="intro-end" style="height:0;"></div>
 
   <div id="map"></div>
   <div id="err"></div>
@@ -94,7 +88,7 @@
     el.textContent = "Error: " + msg + "\n" + (src||"") + ":" + (line||"") + ":" + (col||"");
   };
 
-  // Summary toggle (mobile)
+  // Collapsible summary (mobile)
   document.addEventListener("DOMContentLoaded", function(){
     var btn = document.getElementById("summary-toggle");
     var sum = document.getElementById("summary");
@@ -112,21 +106,16 @@
     if (!name) return name;
     name = name.trim().replace(/\s*\(.*?\)\s*/g, ""); // drop parenthetical
     var map = {
-      // China variants
       "People's Republic of China": "China",
       "Peoples Republic of China": "China",
       "PR China": "China",
       "China, Mainland": "China",
       "China Mainland": "China",
       "Mainland China": "China",
-
-      // Taiwan variants
       "Taiwan, Province of China": "Taiwan",
       "Taiwan Province of China": "Taiwan",
       "Republic of China": "Taiwan",
       "ROC": "Taiwan",
-
-      // Common cleanups
       "Antigua & Barbuda": "Antigua and Barbuda",
       "Antigua &amp; Barbuda": "Antigua and Barbuda",
       "Trinidad & Tobago": "Trinidad and Tobago",
@@ -148,16 +137,13 @@
       "Congo (Brazzaville)": "Republic of the Congo",
       "Congo (Kinshasa)": "Democratic Republic of the Congo",
       "Burma": "Myanmar",
-
-      // Chile
       "Republic of Chile": "Chile",
       "Chile Republic": "Chile"
     };
-    if (map[name]) return map[name];
-    return name.replace(/&/g, "and"); // fallback
+    return map[name] || name.replace(/&/g, "and");
   }
 
-  // Small-country centroids for bubble overlay (extend as needed)
+  // Small-country centroids (subset; extend as needed)
   var SMALL_CENTROIDS = {
     "Antigua and Barbuda": {lat: 17.0608, lon: -61.7964},
     "Barbados": {lat: 13.1939, lon: -59.5432},
@@ -183,6 +169,31 @@
     else { document.addEventListener("DOMContentLoaded", fn); }
   }
 
+  // Smart iOS gap fix: measure & nudge (no overlap)
+  function iOSAutoTrim(){
+    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    if (!isIOS) return;
+
+    var anchor = document.getElementById("intro-end");
+    var map = document.getElementById("map");
+    if (!anchor || !map) return;
+
+    var svgContainer = map.querySelector(".svg-container");
+    if (!svgContainer) return;
+
+    // desired minimal gap between text and map
+    var targetGap = 6; // px
+    var capShift  = 48; // safety cap
+    var a = anchor.getBoundingClientRect();
+    var m = map.getBoundingClientRect();
+    var gap = Math.round(m.top - a.bottom); // positive if space
+
+    var shift = Math.max(0, gap - targetGap);
+    shift = Math.min(shift, capShift);
+
+    svgContainer.style.marginTop = shift ? (-shift) + "px" : "0px";
+  }
+
   ready(function(){
     if (typeof Plotly === "undefined") {
       document.getElementById("err").textContent = "Plotly failed to load. If you're offline or behind a firewall, allow cdn.plot.ly or host this HTML.";
@@ -200,7 +211,6 @@
     var locations    = rawLocations.map(norm);
     var counts       = AGG.map(function(d){ return d.Count; });
 
-    // distinct categorical colors
     var colorIdx = {};
     for (var i=0; i<locations.length; i++){ colorIdx[locations[i]] = i; }
 
@@ -234,7 +244,6 @@
       marker: {line: {color: "#fff", width: 0.5}}
     };
 
-    // Strong red highlight trace (kept visible for single-result search)
     var highlightTrace = {
       type: "choropleth",
       locations: [],
@@ -268,7 +277,6 @@
       }
     });
 
-    // Only create bubblesTrace if we have at least one small-country point
     var hasBubbles = bubbleLat.length > 0;
     var data = [mainTrace, highlightTrace];
     if (hasBubbles) {
@@ -302,7 +310,18 @@
       }
     };
 
-    Plotly.newPlot("map", data, layout, {displayModeBar: false, responsive: true});
+    Plotly.newPlot("map", data, layout, {displayModeBar: false, responsive: true}).then(function(){
+      // After first render, do an iOS-specific trim
+      iOSAutoTrim();
+      // Also trim on resize/orientation changes
+      window.addEventListener("resize", iOSAutoTrim);
+      window.addEventListener("orientationchange", iOSAutoTrim);
+      window.addEventListener("pageshow", iOSAutoTrim);
+      // Plotly internal resize also helps
+      Plotly.Plots.resize(document.getElementById("map"));
+      // Re-trim after that resize
+      setTimeout(iOSAutoTrim, 50);
+    });
 
     // ---- UI refs ----
     var mapDiv = document.getElementById("map");
@@ -341,10 +360,9 @@
       selectedEl.textContent = "Selected country: " + displayName + " - " + sub.length + " participant(s)";
     }
 
-    // ---- Highlight helpers ----
     function clearHighlight(){
-      Plotly.restyle(mapDiv, { "visible": false }, [1]);   // hide highlight trace
-      Plotly.restyle(mapDiv, { "opacity": 1.0 }, [0]);     // restore base opacity
+      Plotly.restyle(mapDiv, { "visible": false }, [1]);
+      Plotly.restyle(mapDiv, { "opacity": 1.0 }, [0]);
       Plotly.relayout(mapDiv, { "geo.fitbounds": false });
     }
 
@@ -356,7 +374,7 @@
         "text": [[normalized]],
         "visible": true
       }, [1]).then(function(){
-        return Plotly.restyle(mapDiv, { "opacity": 0.35 }, [0]); // dim base
+        return Plotly.restyle(mapDiv, { "opacity": 0.35 }, [0]);
       }).then(function(){
         return Plotly.relayout(mapDiv, { "geo.fitbounds": "locations" });
       }).catch(function(e){
@@ -367,7 +385,6 @@
     // Map click
     mapDiv.on("plotly_click", function(evt){
       if (!evt || !evt.points || !evt.points.length) return;
-
       var p = evt.points[0];
       if (hasBubbles && p.curveNumber === 2) {
         var bubbleCtry = bubbleCountry[p.pointIndex];
@@ -375,13 +392,12 @@
         renderTableForCountry(bubbleCtry);
         return;
       }
-
       var countryNameNormalized = p.location;
       highlightCountry(countryNameNormalized);
       renderTableForCountry(countryNameNormalized);
     });
 
-    // ---- Search ----
+    // Search
     function doSearch(){
       var termRaw = (q.value || "").trim();
       var term = termRaw.toLowerCase();
@@ -394,10 +410,7 @@
         return n.indexOf(term) !== -1 || c.indexOf(term) !== -1 || k.indexOf(term) !== -1;
       });
 
-      // Prefer an exact NAME match if present
-      var exact = matches.find(function(r){
-        return (r["Name"]||"").toLowerCase() === term;
-      });
+      var exact = matches.find(function(r){ return (r["Name"]||"").toLowerCase() === term; });
 
       if (exact){
         showTable([exact]);
@@ -413,7 +426,6 @@
         return;
       }
 
-      // Multiple matches: list just the matches (sorted Country -> Name)
       matches.sort(function(a,b){
         var kc = (a["Business Country"]||"").localeCompare(b["Business Country"]||"");
         if (kc !== 0) return kc;
@@ -422,13 +434,11 @@
 
       showTable(matches);
       selectedEl.textContent = 'Search: "' + termRaw + '" - ' + matches.length + ' participant(s)';
-      clearHighlight(); // no single-country highlight for multi-match
+      clearHighlight();
     }
 
     btnSearch.addEventListener("click", doSearch);
-    q.addEventListener("keydown", function(e){
-      if (e.key === "Enter" || e.keyCode === 13) { doSearch(); }
-    });
+    q.addEventListener("keydown", function(e){ if (e.key === "Enter" || e.keyCode === 13) { doSearch(); } });
     btnClear.addEventListener("click", function(){
       q.value = "";
       tbody.innerHTML = "";
