@@ -4,38 +4,53 @@
   <meta charset="utf-8"/>
   <title>HBS PCD 2025 Map Directory</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <!-- Load Plotly at view-time (avoids build-time network failures) -->
+  <!-- Load Plotly at view-time -->
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   <style>
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 12px; }
+    h2 { margin: 10px 0 6px; }
+    p { margin: 6px 0; }
     #map { width: 100%; height: 70vh; }
     table { border-collapse: collapse; width: 100%; margin-top: 10px; }
     th, td { border: 1px solid #ddd; padding: 8px; font-size: 14px; }
     th { background: #f4f4f4; text-align: left; }
     .btn { padding: 8px 12px; border: 1px solid #ccc; background:#fafafa; cursor:pointer; border-radius:6px; }
-    #searchbar { display:flex; gap:8px; align-items:center; margin:8px 0 4px 0; flex-wrap:wrap; }
+    #searchbar { display:flex; gap:8px; align-items:center; margin:8px 0 4px; flex-wrap:wrap; }
     #q { padding: 8px; border:1px solid #ccc; border-radius:6px; min-width: 260px; }
     #err { color: #b00020; white-space: pre-wrap; margin-top: 8px; font-size: 12px; }
 
     /* Summary cards */
-    .summary {
-      display:flex; gap:16px; flex-wrap:wrap; margin:8px 0 12px 0;
-    }
-    .summary .card {
-      padding:10px 14px; border:1px solid #ddd; border-radius:8px; background:#fafafa;
-      min-width: 220px;
-    }
+    .summary { display:flex; gap:16px; flex-wrap:wrap; margin:6px 0 10px; }
+    .summary .card { padding:10px 14px; border:1px solid #ddd; border-radius:8px; background:#fafafa; min-width: 220px; }
     .summary .label { font-size:12px; color:#555; text-transform:uppercase; letter-spacing:.02em; }
     .summary .value { font-size:20px; font-weight:700; margin-top:4px; }
+
+    /* Collapsible summary on mobile + compact layout */
+    #summary-toggle { display:none; margin:8px 0; padding:6px 10px; background:#eee; border:none; border-radius:6px; cursor:pointer; font-size:14px; }
+    @media (max-width: 600px) {
+      body { padding: 8px; }
+      h2 { margin: 6px 0 4px; font-size: 18px; line-height: 1.15; }
+      p { margin: 4px 0; line-height: 1.25; }
+      #map { height: 58vh; }
+      .summary { margin: 6px 0; gap: 8px; display: none; }
+      .summary .card { padding: 8px 10px; min-width: unset; flex: 1; }
+      .summary .label { font-size: 11px; }
+      .summary .value { font-size: 18px; }
+      #summary-toggle { display: inline-block; }
+    }
   </style>
 </head>
 <body>
   <h2>HBS PCD 2025 - Interactive Map Directory</h2>
   <p>Tap a country to see the list of participants below, or search by name.</p>
-  <p>Please let Vajira Weerasekera know if you need any corrections done. Add your change request <a href="https://weerasekeras-my.sharepoint.com/:w:/g/personal/vajira_weerasekera_net/EeJnu3MksotGqbjGb1v5u_0Bkku0pygZRhL2Scqt-po6cg?e=Dll92J" target="_blank" rel="noopener">here</a>.</p>
+  <p>Please let <strong>Vajira Weerasekera</strong> know if you need any corrections done. Add your change request <a href="https://weerasekeras-my.sharepoint.com/:w:/g/personal/vajira_weerasekera_net/EeJnu3MksotGqbjGb1v5u_0Bkku0pygZRhL2Scqt-po6cg?e=Dll92J" target="_blank" rel="noopener">here</a>.</p>
 
-  <!-- Summary bar -->
-  <div class="summary">
+  <div id="map"></div>
+  <div id="err"></div>
+  <hr/>
+
+  <button id="summary-toggle" class="btn">Show Summary</button>
+  <div class="summary" id="summary">
     <div class="card">
       <div class="label">Total Number of Countries</div>
       <div class="value">32</div>
@@ -45,10 +60,6 @@
       <div class="value">124</div>
     </div>
   </div>
-
-  <div id="map"></div>
-  <div id="err"></div>
-  <hr/>
 
   <div id="searchbar">
     <input id="q" type="text" placeholder="Search name, city, or country…" />
@@ -68,18 +79,28 @@
   <script id="rows-json" type="application/json">[{"Name": "Jessica Adelman", "Business City": "Newark", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/jessica-c-adelman-0a772b12/"}, {"Name": "Fatema AlAlawi", "Business City": "Manama", "Business Country": "Bahrain", "LinkedIn URL": "https://www.linkedin.com/in/fatema-alalawi-83860166/"}, {"Name": "Katrice Albert", "Business City": "Lexington", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/katricealbert2007/"}, {"Name": "Ali Alhamdan", "Business City": "Riyadh", "Business Country": "Saudi Arabia", "LinkedIn URL": "https://www.linkedin.com/in/alialhamdan2030/?originalSubdomain=sa"}, {"Name": "Abdullah Aljuffali", "Business City": "Riyadh", "Business Country": "Saudi Arabia", "LinkedIn URL": "https://www.linkedin.com/in/abdullah-al-juffali-51209418/?originalSubdomain=sa"}, {"Name": "Yazeed Almobty", "Business City": "Riyadh", "Business Country": "Saudi Arabia", "LinkedIn URL": "https://www.linkedin.com/in/almobty/?originalSubdomain=sa"}, {"Name": "Antonio Alvarez", "Business City": "The Woodlands", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/antonio-alvarez-61a429/"}, {"Name": "Eman Alzoubi", "Business City": "Riyadh", "Business Country": "Saudi Arabia", "LinkedIn URL": "https://www.linkedin.com/in/eman-alzoubi-85225b30/?originalSubdomain=sa"}, {"Name": "Patricia Annino", "Business City": "Boston", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/patriciaannino/"}, {"Name": "Itxaso Araque", "Business City": "Berlin", "Business Country": "Germany", "LinkedIn URL": "https://www.linkedin.com/in/itxasoaraque/"}, {"Name": "Hans Augspurg", "Business City": "Guatemala", "Business Country": "Guatemala", "LinkedIn URL": "https://www.linkedin.com/in/hans-augspurg-rosales-y-rosales-327873320/"}, {"Name": "Hugh Baker", "Business City": "Greenwich", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/hugh-baker-19b55420/"}, {"Name": "Kristy Banas", "Business City": "Denver", "Business Country": "United States", "LinkedIn URL": "linkedin.com/in/kristybanas"}, {"Name": "Subrata Banerjea", "Business City": "Jacksonville", "Business Country": "United States", "LinkedIn URL": "linkedin.com/in/sunnybanerjea"}, {"Name": "Kevin Barry", "Business City": "New York", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/kevin-barry-91565913/"}, {"Name": "Arati Batta", "Business City": "Miami", "Business Country": "United States", "LinkedIn URL": "linkedin.com/in/arati-batta-42856b293"}, {"Name": "Michael Beacham", "Business City": "Costa Mesa", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/michael-beacham-12b32724/"}, {"Name": "Rainer Bizenberger", "Business City": "Munich", "Business Country": "Germany", "LinkedIn URL": "linkedin.com/in/rainer-bizenberger"}, {"Name": "Matthew Bohan", "Business City": "Seattle", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/matthewbohan/"}, {"Name": "Dominique Bourda", "Business City": "Houston", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/dominiquebourda/"}, {"Name": "Gilbert Boustany", "Business City": "St. John's", "Business Country": "Antigua and Barbuda", "LinkedIn URL": "https://www.linkedin.com/in/gil-boustany-496026352/"}, {"Name": "Elaine Bowers Coventry", "Business City": "NW Atlanta", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/elaine-bowers-coventry/"}, {"Name": "Mark Brooks", "Business City": "Dubai", "Business Country": "United Arab Emirates", "LinkedIn URL": "http://www.linkedin.com/in/mcbrooks"}, {"Name": "Russell Burke", "Business City": "San Mateo", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/russellburke/"}, {"Name": "Jane Butler", "Business City": "Mountain View", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/jane-butler-06225126/"}, {"Name": "John Cadenhead", "Business City": "Houston", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/john-cadenhead-99843320/"}, {"Name": "Jeanette Calandra", "Business City": "New York", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/jeanettecalandra/"}, {"Name": "Marietna Cantillo", "Business City": "Bogota", "Business Country": "Colombia", "LinkedIn URL": "linkedin.com/in/marietna-cantillo-00740b"}, {"Name": "Monica Cantonetti", "Business City": "Boston", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/monica-cantonetti-8167622/"}, {"Name": "Luis Carrillo", "Business City": "CDMX", "Business Country": "Mexico", "LinkedIn URL": "https://www.linkedin.com/in/luiscarrillo/"}, {"Name": "Karim Chaaban", "Business City": "Riyadh", "Business Country": "Saudi Arabia", "LinkedIn URL": "https://www.linkedin.com/in/karimchaaban/"}, {"Name": "Vaibhavi Choksi", "Business City": "New Delhi", "Business Country": "India", "LinkedIn URL": "https://www.linkedin.com/in/vaibhavi-choksi-3a965016/"}, {"Name": "Fausto Costa", "Business City": "Mexico City", "Business Country": "Mexico", "LinkedIn URL": "nan"}, {"Name": "Monisha Dabek", "Business City": "Lakeville", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/monisha-dabek-82b3265/"}, {"Name": "Livia De Bastos Martini", "Business City": "New York", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/liviamartini/"}, {"Name": "Jorge de la Mora", "Business City": "Mexico City", "Business Country": "Mexico", "LinkedIn URL": "https://www.linkedin.com/in/jorge-de-la-mora-a94326/"}, {"Name": "Michael Demeure", "Business City": "Newport Beach", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/michael-demeure-md-mba-cpe-a1885010/"}, {"Name": "Ajay Dhaul", "Business City": "Princeton", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/ajaydhaul/"}, {"Name": "Gaurav Dogra", "Business City": "Coppelll", "Business Country": "United States", "LinkedIn URL": "linkedin.com/in/gauravdogra"}, {"Name": "Pavel Dorosevich", "Business City": "Singapore", "Business Country": "Singapore", "LinkedIn URL": "https://www.linkedin.com/in/paveldorosevich/"}, {"Name": "Willem Elias", "Business City": "Tokyo", "Business Country": "Japan", "LinkedIn URL": "https://www.linkedin.com/in/thijs-elias-440210/"}, {"Name": "Holger Erchinger", "Business City": "New York/New York", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/holger-erchinger/"}, {"Name": "Joseph Eshun", "Business City": "Johannesburg", "Business Country": "South Africa", "LinkedIn URL": "https://www.linkedin.com/in/joe-eshun-aa8994/"}, {"Name": "Maan Farsi", "Business City": "Riyadh", "Business Country": "Saudi Arabia", "LinkedIn URL": "https://www.linkedin.com/in/maan-farsi/?originalSubdomain=sa"}, {"Name": "Thomas Fecker Boxler", "Business City": "Zug", "Business Country": "Switzerland", "LinkedIn URL": "https://linkedin.com/in/thofebo"}, {"Name": "Ludovic Fenaux", "Business City": "London", "Business Country": "United Kingdom", "LinkedIn URL": "https://www.linkedin.com/in/ludovic-fenaux-1a12651/"}, {"Name": "Sergio Fernandes", "Business City": "São Paulo", "Business Country": "Brazil", "LinkedIn URL": "https://www.linkedin.com/in/sergio-souza-fernandes-jr-aa412335/?originalSubdomain=br"}, {"Name": "Guillermo Fonseca Torres", "Business City": "Mexico City", "Business Country": "Mexico", "LinkedIn URL": "nan"}, {"Name": "Brian Fox", "Business City": "Nashville", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/brianfoxcpa"}, {"Name": "Cesar Augusto Franca", "Business City": "Dublin", "Business Country": "Ireland", "LinkedIn URL": "https://www.linkedin.com/in/cesarfranca/?originalSubdomain=ch"}, {"Name": "Adrian Franciscono", "Business City": "São Paulo", "Business Country": "Brazil", "LinkedIn URL": "https://www.linkedin.com/in/adrianfranciscono/"}, {"Name": "Fernando Gabel", "Business City": "Hamburg", "Business Country": "Brazil", "LinkedIn URL": "https://www.linkedin.com/in/fernando-gabel/"}, {"Name": "Martha Galley", "Business City": "San Jose", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/marthagalley/"}, {"Name": "Mario Gandara", "Business City": "Caracas", "Business Country": "Venezuela", "LinkedIn URL": "https://www.linkedin.com/in/mario-gandara-720b10bb/"}, {"Name": "Txema Garitano", "Business City": "Barcelona", "Business Country": "Spain", "LinkedIn URL": "https://www.linkedin.com/in/garitano/"}, {"Name": "Charles Geer", "Business City": "Norwell", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/chuck-g-a20298a6/"}, {"Name": "Kaushik Ghoshal", "Business City": "San Diego", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/ghoshalbobby/"}, {"Name": "Darin Green", "Business City": "Chandler", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/darin-green-0a47885/"}, {"Name": "Guillermo Grela", "Business City": "Munro", "Business Country": "Argentina", "LinkedIn URL": "https://www.linkedin.com/in/guillermo-grela-58813122/"}, {"Name": "Anthony Hankins", "Business City": "The Woodlands", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/tony-hankins-78b58412/"}, {"Name": "Michael Haugh", "Business City": "Cordova", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/michael-haugh-a71a27/"}, {"Name": "Dan Hay", "Business City": "Bothell", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/dan-hay-544989/"}, {"Name": "Alberto Hernandez", "Business City": "Barcelona", "Business Country": "Spain", "LinkedIn URL": "https://www.linkedin.com/in/alberto-hernández-téllez"}, {"Name": "Johanna Herrmann", "Business City": "Rahway", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/johannarangel/"}, {"Name": "Jose Hidalgo", "Business City": "Beaver Creek", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/jose-hidalgo-mba-cpa-cma/"}, {"Name": "Francisco Horta", "Business City": "São Paulo", "Business Country": "Brazil", "LinkedIn URL": "https://www.linkedin.com/in/francisco-horta-7bb13510/"}, {"Name": "Ahmed Indimi", "Business City": "Abuja", "Business Country": "Nigeria", "LinkedIn URL": "https://www.linkedin.com/in/ahmed-indimi-951a2270/?originalSubdomain=ng"}, {"Name": "Roman Irurre Wolfisberg", "Business City": "Lima, Peru", "Business Country": "Peru", "LinkedIn URL": "https://www.linkedin.com/in/rom%C3%A1nirurrewolfisberg/?originalSubdomain=pe"}, {"Name": "Nawaf Kably", "Business City": "AlKhobar", "Business Country": "Saudi Arabia", "LinkedIn URL": "https://www.linkedin.com/in/nawafkably/?originalSubdomain=sa"}, {"Name": "Prameela Kalive", "Business City": "Mumbai", "Business Country": "India", "LinkedIn URL": "https://www.linkedin.com/in/prameelakalive/"}, {"Name": "Pramod Karunakaran", "Business City": "Kuching/ Sarawak", "Business Country": "Malaysia", "LinkedIn URL": "linkedin.com/in/ir-pramod-kumar-karunakaran-20618131"}, {"Name": "Joseph Kelley", "Business City": "Westlake", "Business Country": "United States", "LinkedIn URL": "nan"}, {"Name": "Christopher Kimm", "Business City": "Ashburn", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/chriskimm/"}, {"Name": "Pierre Labat", "Business City": "Kusnacht", "Business Country": "Switzerland", "LinkedIn URL": "https://www.linkedin.com/in/pierre-labat-858862/"}, {"Name": "Michael Lammons", "Business City": "Atlanta", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/mike-lammons/"}, {"Name": "Lara Lemann", "Business City": "São Paulo", "Business Country": "Brazil", "LinkedIn URL": "https://www.linkedin.com/in/laralemann/"}, {"Name": "Shannon Lewis", "Business City": "Toronto", "Business Country": "Canada", "LinkedIn URL": "https://www.linkedin.com/in/snlewis/?originalSubdomain=ca"}, {"Name": "Maurici Llado", "Business City": "Miami", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/maurici-llad%C3%B3-b523481/"}, {"Name": "Lan Ma", "Business City": "Shanghai", "Business Country": "Taiwan", "LinkedIn URL": "https://www.linkedin.com/in/maangie/"}, {"Name": "Deepti Malhotra", "Business City": "nan", "Business Country": "nan", "LinkedIn URL": "linkedin.com/in/deepti-malhotra-7aa25924"}, {"Name": "Peter Marquez", "Business City": "Palo Alto", "Business Country": "United States", "LinkedIn URL": "nan"}, {"Name": "William Martin", "Business City": "Abu Dhabi", "Business Country": "United Arab Emirates", "LinkedIn URL": "https://www.linkedin.com/in/william-martin-7a86391a/"}, {"Name": "Julia Martini", "Business City": "Sao Paulo", "Business Country": "Brazil", "LinkedIn URL": "https://www.linkedin.com/in/j%C3%BAlia-martini-35a39715/"}, {"Name": "Ana Matarranz", "Business City": "Madrid", "Business Country": "Spain", "LinkedIn URL": "https://www.linkedin.com/in/anamatarranz/"}, {"Name": "Spyridon Matsoukis", "Business City": "Bolingbrook", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/spyrosmatsoukis/"}, {"Name": "Michael McCarron", "Business City": "Boston", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/mikecmccarron/"}, {"Name": "Michael McCleary", "Business City": "San Diego", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/michael-mccleary-cpa/"}, {"Name": "Lauren Mifflin", "Business City": "Boston", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/lmifflin/"}, {"Name": "Joao Pedro Miranda Reis", "Business City": "Grand Cayman", "Business Country": "Cayman Islands", "LinkedIn URL": "https://www.linkedin.com/in/jmreis/"}, {"Name": "Hector Muelas", "Business City": "New York", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/hector-muelas-9441b021"}, {"Name": "Joel Muñiz", "Business City": "Mexico", "Business Country": "Mexico", "LinkedIn URL": "https://www.linkedin.com/in/joel-mu%C3%B1iz-1201ab1/"}, {"Name": "John Mwanza", "Business City": "Lusaka", "Business Country": "Zambia", "LinkedIn URL": "https://www.linkedin.com/in/john-mwanza-92202919/"}, {"Name": "Kennedy Okwudili", "Business City": "FCT, Abuja", "Business Country": "Nigeria", "LinkedIn URL": "nan"}, {"Name": "Jesus Ontañon Alvarez", "Business City": "Culiacán", "Business Country": "Mexico", "LinkedIn URL": "https://www.linkedin.com/in/sontanon/"}, {"Name": "Lee Overstreet", "Business City": "San Francisco", "Business Country": "United States", "LinkedIn URL": "linkedin.com/in/lee-overstreet-7ab12b16"}, {"Name": "Atul Patel", "Business City": "San Diego", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/atul-patel-55136b1/"}, {"Name": "Chris Pierce", "Business City": "Florham Park", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/chris-pierce-4b4aaa7/"}, {"Name": "Juan Luis Prieto", "Business City": "Mexico City", "Business Country": "Mexico", "LinkedIn URL": "nan"}, {"Name": "Elizaveta Rasskazova", "Business City": "London", "Business Country": "United Kingdom", "LinkedIn URL": "linkedin.com/in/elizabeth-rasskazova-52437210"}, {"Name": "Wilmar Rodriguez", "Business City": "Sao Paulo", "Business Country": "Brazil", "LinkedIn URL": "https://www.linkedin.com/in/wilmar-rodriguez-34a157/"}, {"Name": "Arturo Saavedra", "Business City": "Rihmond", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/art-saavedra-md-phd-mba-5b05b9330/"}, {"Name": "Edgardo Rafael Sanchez Sanchez", "Business City": "Mexico City", "Business Country": "Mexico", "LinkedIn URL": "https://www.linkedin.com/in/fedori/?originalSubdomain=mx"}, {"Name": "Sharell Sandvoss", "Business City": "Madrid", "Business Country": "Spain", "LinkedIn URL": "https://www.linkedin.com/in/sharell-sandvoss/"}, {"Name": "Cyril Schiever", "Business City": "Lucerne", "Business Country": "Switzerland", "LinkedIn URL": "https://www.linkedin.com/in/cyril-schiever-62337611/"}, {"Name": "Fernando Setubal", "Business City": "São Paulo", "Business Country": "Brazil", "LinkedIn URL": "nan"}, {"Name": "Yong Je Shin", "Business City": "Riyadh", "Business Country": "Saudi Arabia", "LinkedIn URL": "https://www.linkedin.com/in/yjshin/?originalSubdomain=uk"}, {"Name": "Ron Shkedi", "Business City": "New York", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/ronshkedi/"}, {"Name": "Antoniel Silva do Nascimento", "Business City": "Sao Paulo", "Business Country": "Brazil", "LinkedIn URL": "https://www.linkedin.com/in/antonielsilva/"}, {"Name": "Andrew Sofield", "Business City": "Los Angeles", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/andy-sofield-a2825/"}, {"Name": "Gerald Stone", "Business City": "Baltimore", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/gerald-stone-22b2076"}, {"Name": "Henning Streubel", "Business City": "San Francisco", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/henning-streubel-phd/"}, {"Name": "Matthew Studney", "Business City": "Rahway", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/matt-studney-3595914/"}, {"Name": "Madhivanan Thathampalayam Arunachalam", "Business City": "Houston", "Business Country": "United States", "LinkedIn URL": "linkedin.com/in/madhivanan"}, {"Name": "Anne-Marie Thygesen", "Business City": "Copenhagen", "Business Country": "Denmark", "LinkedIn URL": "https://www.linkedin.com/in/anne-marie-thygesen-2b8110150/"}, {"Name": "Henry Fernando Tocora Manrique", "Business City": "Santo Domingo", "Business Country": "Dominican Republic", "LinkedIn URL": "https://www.linkedin.com/in/tocman/?originalSubdomain=do"}, {"Name": "Colleen Tupper", "Business City": "Stoughton", "Business Country": "United States", "LinkedIn URL": "linkedin.com/in/colleen-tupper-5ab75415"}, {"Name": "Felipe Valdes", "Business City": "Rio de Janeiro RJ", "Business Country": "Chile", "LinkedIn URL": "https://www.linkedin.com/in/felipe-valdes-48a1763/"}, {"Name": "Kobus Van der Wath", "Business City": "Dubai", "Business Country": "United Arab Emirates", "LinkedIn URL": "https://www.linkedin.com/in/kobus-van-der-wath-1b16a33/"}, {"Name": "Javier Velarde Zapater", "Business City": "Miami", "Business Country": "Peru", "LinkedIn URL": "https://www.linkedin.com/in/javier-a-velarde-zapater-75681131/"}, {"Name": "Vajira Weerasekera", "Business City": "Wahroonga", "Business Country": "Australia", "LinkedIn URL": "https://www.linkedin.com/pub/vajira-weerasekera/1/a00/535"}, {"Name": "David Williams", "Business City": "New York", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/david-williams-32508b7"}, {"Name": "Michael Wilson", "Business City": "Miami", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/mike-wilson-b0ab1b6/"}, {"Name": "Muhiyadeen Zareen", "Business City": "Jeddah", "Business Country": "Saudi Arabia", "LinkedIn URL": "www.linkedin.com/in/mazareen"}, {"Name": "Peter Zisterer", "Business City": "Lisle", "Business Country": "United States", "LinkedIn URL": "https://www.linkedin.com/in/peter-zisterer-1ab2b08/"}]</script>
 
 <script>
-  // Show JS errors on page
+  // Show JS errors on page (visible red line)
   window.onerror = function(msg, src, line, col){
     var el = document.getElementById("err");
     el.textContent = "Error: " + msg + "\n" + (src||"") + ":" + (line||"") + ":" + (col||"");
   };
 
-  // Normalize country names for Plotly
+  // Summary toggle (mobile)
+  document.addEventListener("DOMContentLoaded", function(){
+    var btn = document.getElementById("summary-toggle");
+    var sum = document.getElementById("summary");
+    if (!btn || !sum) return;
+    btn.addEventListener("click", function(){
+      var vis = getComputedStyle(sum).display;
+      if (vis === "none") { sum.style.display = "flex"; btn.textContent = "Hide Summary"; }
+      else { sum.style.display = "none"; btn.textContent = "Show Summary"; }
+    });
+  });
+
+  // Normalize country names for Plotly (JS)
   function norm(name){
     if (!name) return name;
-    name = name.trim();
-    name = name.replace(/\s*\(.*?\)\s*/g, ""); // drop parenthetical
-
+    name = name.trim().replace(/\s*\(.*?\)\s*/g, ""); // drop parenthetical
     var map = {
       // China variants
       "People's Republic of China": "China",
@@ -95,7 +116,7 @@
       "Republic of China": "Taiwan",
       "ROC": "Taiwan",
 
-      // Existing mappings
+      // Common cleanups
       "Antigua & Barbuda": "Antigua and Barbuda",
       "Antigua &amp; Barbuda": "Antigua and Barbuda",
       "Trinidad & Tobago": "Trinidad and Tobago",
@@ -123,10 +144,10 @@
       "Chile Republic": "Chile"
     };
     if (map[name]) return map[name];
-    return name.replace(/&/g, "and");
+    return name.replace(/&/g, "and"); // fallback
   }
 
-  // Small-country centroids for bubble overlay
+  // Small-country centroids for bubble overlay (extend as needed)
   var SMALL_CENTROIDS = {
     "Antigua and Barbuda": {lat: 17.0608, lon: -61.7964},
     "Barbados": {lat: 13.1939, lon: -59.5432},
@@ -154,8 +175,7 @@
 
   ready(function(){
     if (typeof Plotly === "undefined") {
-      var el = document.getElementById("err");
-      el.textContent = "Plotly failed to load. If you're offline or behind a firewall, try hosting this HTML or allow cdn.plot.ly.";
+      document.getElementById("err").textContent = "Plotly failed to load. If you're offline or behind a firewall, allow cdn.plot.ly or host this HTML.";
       return;
     }
 
@@ -375,7 +395,7 @@
         showTable([exact]);
         selectedEl.textContent = 'Search: "' + termRaw + '" - 1 match (' + exact["Business Country"] + ')';
         currentCountry = null;
-        highlightCountry(exact["Business Country"]);
+        highlightCountry(exact["Business Country"]); // zoom + red outline
         return;
       }
 
@@ -387,7 +407,7 @@
         return;
       }
 
-      // Multiple matches: list just the matches
+      // Multiple matches: list just the matches (sorted Country -> Name)
       matches.sort(function(a,b){
         var kc = (a["Business Country"]||"").localeCompare(b["Business Country"]||"");
         if (kc !== 0) return kc;
